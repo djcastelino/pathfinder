@@ -67,10 +67,10 @@ export default function ViewerScreen({ data, onReset }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Street View */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 lg:h-full">
             <div 
               ref={streetViewRef} 
-              className="w-full aspect-video bg-gray-900 relative"
+              className="w-full aspect-video lg:aspect-auto bg-gray-900 relative lg:h-[calc(100%-60px)]"
               style={{ minHeight: '400px', height: '500px' }}
             >
               {!streetViewAvailable && (
