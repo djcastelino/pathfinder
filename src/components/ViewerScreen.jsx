@@ -65,44 +65,94 @@ export default function ViewerScreen({ data, onReset }) {
     }
   }, [data]);
 
-  // TTS Audio Functions
+  // TTS Audio Functions with Google Cloud TTS
   const handlePlayAudio = () => {
-    if (isPaused) {
-      window.speechSynthesis.resume();
-      setIsPaused(false);
-      setIsPlaying(true);
+    // Check if we have Google TTS audio
+    if (data.audioContent) {
+      // Use Google Cloud TTS audio
+      if (isPaused && utteranceRef.current) {
+        utteranceRef.current.play();
+        setIsPaused(false);
+        setIsPlaying(true);
+      } else {
+        // Stop any existing audio
+        if (utteranceRef.current) {
+          utteranceRef.current.pause();
+          utteranceRef.current.currentTime = 0;
+        }
+        
+        // Decode base64 audio and play
+        const audioData = atob(data.audioContent);
+        const arrayBuffer = new Uint8Array(audioData.length);
+        for (let i = 0; i < audioData.length; i++) {
+          arrayBuffer[i] = audioData.charCodeAt(i);
+        }
+        const blob = new Blob([arrayBuffer], { type: 'audio/mp3' });
+        const audioUrl = URL.createObjectURL(blob);
+        
+        const audio = new Audio(audioUrl);
+        audio.onplay = () => setIsPlaying(true);
+        audio.onended = () => {
+          setIsPlaying(false);
+          setIsPaused(false);
+          URL.revokeObjectURL(audioUrl);
+        };
+        audio.onerror = () => {
+          setIsPlaying(false);
+          setIsPaused(false);
+          console.error('Audio playback error');
+        };
+        
+        utteranceRef.current = audio;
+        audio.play();
+      }
     } else {
-      // Stop any existing speech
-      window.speechSynthesis.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(data.narration);
-      utterance.rate = 0.85; // Slightly slower for tour guide feel
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-      
-      utterance.onstart = () => setIsPlaying(true);
-      utterance.onend = () => {
-        setIsPlaying(false);
+      // Fallback to browser TTS
+      if (isPaused) {
+        window.speechSynthesis.resume();
         setIsPaused(false);
-      };
-      utterance.onerror = () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-      };
-      
-      utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
+        setIsPlaying(true);
+      } else {
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(data.narration);
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        
+        utterance.onstart = () => setIsPlaying(true);
+        utterance.onend = () => {
+          setIsPlaying(false);
+          setIsPaused(false);
+        };
+        utterance.onerror = () => {
+          setIsPlaying(false);
+          setIsPaused(false);
+        };
+        
+        utteranceRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+      }
     }
   };
 
   const handlePauseAudio = () => {
-    window.speechSynthesis.pause();
+    if (data.audioContent && utteranceRef.current) {
+      utteranceRef.current.pause();
+    } else {
+      window.speechSynthesis.pause();
+    }
     setIsPaused(true);
     setIsPlaying(false);
   };
 
   const handleStopAudio = () => {
-    window.speechSynthesis.cancel();
+    if (data.audioContent && utteranceRef.current) {
+      utteranceRef.current.pause();
+      utteranceRef.current.currentTime = 0;
+    } else {
+      window.speechSynthesis.cancel();
+    }
     setIsPlaying(false);
     setIsPaused(false);
   };
@@ -110,9 +160,13 @@ export default function ViewerScreen({ data, onReset }) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      window.speechSynthesis.cancel();
+      if (data.audioContent && utteranceRef.current) {
+        utteranceRef.current.pause();
+      } else {
+        window.speechSynthesis.cancel();
+      }
     };
-  }, []);
+  }, [data.audioContent]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
