@@ -7,7 +7,7 @@ export const DESTINATION_CATEGORIES = {
 
 export const POPULAR_DESTINATIONS = [
   // Sacred Paths
-  { name: 'Via Dolorosa', icon: '✝️', query: 'Church of the Holy Sepulchre, Jerusalem', category: 'SACRED' },
+  { name: 'Via Dolorosa', icon: '✝️', query: 'Via Dolorosa', category: 'SACRED' },
   { name: 'Battle of Gettysburg', icon: '⚔️', query: 'Gettysburg National Military Park, Pennsylvania', category: 'SACRED' },
   { name: 'Western Wall', icon: '🕍', query: 'Western Wall, Jerusalem', category: 'SACRED' },
   
