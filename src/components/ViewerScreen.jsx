@@ -198,7 +198,7 @@ export default function ViewerScreen({ data, onReset }) {
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
             <div 
               ref={streetViewRef} 
-              className="w-full h-[500px] lg:h-[1050px] bg-gray-900 relative"
+              className="w-full h-[500px] lg:h-[1150px] bg-gray-900 relative"
             >
               {!streetViewAvailable && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">

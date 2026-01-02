@@ -53,24 +53,71 @@ export default function SearchScreen({ onSearch, isLoading }) {
         </form>
       </div>
 
-      {/* Popular Destinations */}
-      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-        <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+      {/* Popular Destinations by Category */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 space-y-6">
+        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-yellow-500" />
           Popular Destinations
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {POPULAR_DESTINATIONS.map((dest) => (
-            <button
-              key={dest.name}
-              onClick={() => onSearch(dest.query)}
-              disabled={isLoading}
-              className="flex flex-col items-center justify-center p-3 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-all group"
-            >
-              <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">{dest.icon}</span>
-              <span className="text-sm font-medium text-gray-700">{dest.name}</span>
-            </button>
-          ))}
+        
+        {/* Sacred Paths */}
+        <div>
+          <h4 className="text-sm font-semibold text-purple-700 mb-3 flex items-center gap-2">
+            ✝️ Sacred Paths
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {POPULAR_DESTINATIONS.filter(d => d.category === 'SACRED').map((dest) => (
+              <button
+                key={dest.name}
+                onClick={() => onSearch(dest.query)}
+                disabled={isLoading}
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-purple-100 hover:border-purple-300 hover:bg-purple-50 transition-all group"
+              >
+                <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">{dest.icon}</span>
+                <span className="text-xs font-medium text-gray-700">{dest.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Architecture */}
+        <div>
+          <h4 className="text-sm font-semibold text-blue-700 mb-3 flex items-center gap-2">
+            🏛️ Architecture
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {POPULAR_DESTINATIONS.filter(d => d.category === 'ARCHITECTURE').map((dest) => (
+              <button
+                key={dest.name}
+                onClick={() => onSearch(dest.query)}
+                disabled={isLoading}
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-blue-100 hover:border-blue-300 hover:bg-blue-50 transition-all group"
+              >
+                <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">{dest.icon}</span>
+                <span className="text-xs font-medium text-gray-700">{dest.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Geographic Landmarks */}
+        <div>
+          <h4 className="text-sm font-semibold text-green-700 mb-3 flex items-center gap-2">
+            🌍 Geographic Landmarks
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {POPULAR_DESTINATIONS.filter(d => d.category === 'LANDMARKS').map((dest) => (
+              <button
+                key={dest.name}
+                onClick={() => onSearch(dest.query)}
+                disabled={isLoading}
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-green-100 hover:border-green-300 hover:bg-green-50 transition-all group"
+              >
+                <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">{dest.icon}</span>
+                <span className="text-xs font-medium text-gray-700">{dest.name}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
