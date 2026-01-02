@@ -2,17 +2,37 @@ import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import SearchScreen from './components/SearchScreen';
 import ViewerScreen from './components/ViewerScreen';
+import TourScreen from './components/TourScreen';
 import { geocodeLocation, fetchWikipediaSummary, generateNarration } from './services/api';
+import { GUIDED_TOURS } from './constants';
 
 function App() {
   const [currentView, setCurrentView] = useState('search');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [locationData, setLocationData] = useState(null);
+  const [activeTour, setActiveTour] = useState(null);
+  const [currentStop, setCurrentStop] = useState(0);
 
   const handleSearch = async (query) => {
     setIsLoading(true);
     setError(null);
+    
+    // Check if this is a tour request
+    if (query.startsWith('tour:')) {
+      const tourId = query.replace('tour:', '');
+      const tour = GUIDED_TOURS.find(t => t.id === tourId);
+      if (tour) {
+        setActiveTour(tour);
+        setCurrentStop(0);
+        setCurrentView('tour');
+        setIsLoading(false);
+        // Load first stop
+        await loadTourStop(tour, 0);
+        return;
+      }
+    }
+    
     try {
       // 1. Wikipedia Summary (fetch first to get accurate coordinates)
       const wiki = await fetchWikipediaSummary(query);
@@ -65,16 +85,39 @@ function App() {
     }
   };
 
+  const loadTourStop = async (tour, stopIndex) => {
+    if (stopIndex < 0 || stopIndex >= tour.stops.length) return;
+    
+    setIsLoading(true);
+    setCurrentStop(stopIndex);
+    
+    try {
+      const stop = tour.stops[stopIndex];
+      await handleSearch(stop.query);
+    } catch (err) {
+      console.error('Tour stop load error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTourStopSelect = async (stopIndex) => {
+    if (!activeTour) return;
+    await loadTourStop(activeTour, stopIndex);
+  };
+
   const resetToSearch = () => {
     setCurrentView('search');
     setError(null);
     setLocationData(null);
+    setActiveTour(null);
+    setCurrentStop(0);
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-green-50">
       <Header 
-        showBack={currentView === 'viewer'} 
+        showBack={currentView === 'viewer' || currentView === 'tour'} 
         onBack={resetToSearch} 
       />
       
@@ -90,6 +133,21 @@ function App() {
 
         {currentView === 'search' ? (
           <SearchScreen onSearch={handleSearch} isLoading={isLoading} />
+        ) : currentView === 'tour' && activeTour ? (
+          <>
+            <TourScreen 
+              tour={activeTour}
+              currentStop={currentStop}
+              onStopSelect={handleTourStopSelect}
+              onBack={resetToSearch}
+            />
+            {locationData && (
+              <ViewerScreen 
+                data={locationData} 
+                onReset={resetToSearch} 
+              />
+            )}
+          </>
         ) : (
           locationData && (
             <ViewerScreen 

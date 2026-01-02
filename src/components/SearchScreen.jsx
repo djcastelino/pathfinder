@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Search, MapPin, Sparkles, Info } from 'lucide-react';
-import { POPULAR_DESTINATIONS } from '../constants';
+import { Search, MapPin, Sparkles, Info, Navigation } from 'lucide-react';
+import { POPULAR_DESTINATIONS, GUIDED_TOURS } from '../constants';
 
 export default function SearchScreen({ onSearch, isLoading }) {
   const [query, setQuery] = useState('');
@@ -51,6 +51,38 @@ export default function SearchScreen({ onSearch, isLoading }) {
             )}
           </button>
         </form>
+      </div>
+
+      {/* Guided Tours */}
+      <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl shadow-lg p-6 border border-purple-100 space-y-4">
+        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <Navigation className="w-5 h-5 text-purple-600" />
+          Guided Tours
+        </h3>
+        <p className="text-sm text-gray-600">Multi-stop immersive historical journeys</p>
+        
+        <div className="grid grid-cols-1 gap-4">
+          {GUIDED_TOURS.map((tour) => (
+            <button
+              key={tour.id}
+              onClick={() => onSearch(`tour:${tour.id}`)}
+              disabled={isLoading}
+              className="bg-white rounded-xl p-4 border border-purple-200 hover:border-purple-400 hover:shadow-md transition-all text-left group"
+            >
+              <div className="flex items-start gap-4">
+                <span className="text-3xl group-hover:scale-110 transition-transform">{tour.icon}</span>
+                <div className="flex-1">
+                  <h4 className="font-bold text-gray-900 mb-1">{tour.name}</h4>
+                  <p className="text-sm text-gray-600 mb-2">{tour.description}</p>
+                  <div className="flex items-center gap-3 text-xs text-purple-700">
+                    <span className="bg-purple-100 px-2 py-1 rounded-full">{tour.duration}</span>
+                    <span className="bg-blue-100 px-2 py-1 rounded-full">{tour.category}</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Popular Destinations by Category */}
