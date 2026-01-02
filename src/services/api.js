@@ -2,27 +2,54 @@
 
 export const fetchWikipediaSummary = async (query) => {
   try {
-    // Search with preference for historic landmarks
-    const searchQuery = `${query} historic landmark monument`;
-    const searchRes = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchQuery)}&format=json&origin=*`
+    // Try exact match first
+    let summaryRes = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query.replace(/ /g, '_'))}`
     );
     
-    if (!searchRes.ok) {
-      console.warn(`Wikipedia search failed: ${searchRes.status}`);
-      return null;
+    // If exact match fails, search with filters
+    if (!summaryRes.ok) {
+      const searchRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`
+      );
+      
+      if (!searchRes.ok) {
+        console.warn(`Wikipedia search failed: ${searchRes.status}`);
+        return null;
+      }
+      
+      const searchData = await searchRes.json();
+      
+      if (!searchData.query.search.length) return null;
+      
+      // Filter out disambiguation pages, court cases, and prefer actual places
+      let pageTitle = searchData.query.search[0].title;
+      for (const result of searchData.query.search) {
+        const title = result.title.toLowerCase();
+        const snippet = result.snippet.toLowerCase();
+        
+        // Skip court cases, legal articles, disambiguation pages
+        if (title.includes('vs.') || title.includes('v.') || 
+            title.includes('(disambiguation)') ||
+            snippet.includes('court case') || 
+            snippet.includes('litigation')) {
+          continue;
+        }
+        
+        // Prefer results that mention building, monument, temple, etc.
+        if (snippet.includes('building') || snippet.includes('monument') || 
+            snippet.includes('temple') || snippet.includes('palace') ||
+            snippet.includes('located in') || snippet.includes('situated')) {
+          pageTitle = result.title;
+          break;
+        }
+      }
+      
+      console.log('Wikipedia found:', pageTitle);
+      summaryRes = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`
+      );
     }
-    
-    const searchData = await searchRes.json();
-    
-    if (!searchData.query.search.length) return null;
-    
-    const pageTitle = searchData.query.search[0].title;
-    console.log('Wikipedia found:', pageTitle);
-    
-    const summaryRes = await fetch(
-      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`
-    );
     
     if (!summaryRes.ok) {
       console.warn(`Wikipedia summary failed: ${summaryRes.status} - Rate limited or not found`);
