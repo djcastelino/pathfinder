@@ -26,7 +26,16 @@ export const fetchWikipediaSummary = async (query) => {
       return null;
     }
     
-    return await summaryRes.json();
+    const wikiData = await summaryRes.json();
+    
+    // Add coordinates if available from Wikipedia
+    if (wikiData.coordinates) {
+      wikiData.lat = wikiData.coordinates.lat;
+      wikiData.lng = wikiData.coordinates.lon;
+      console.log('Using Wikipedia coordinates:', wikiData.lat, wikiData.lng);
+    }
+    
+    return wikiData;
   } catch (error) {
     console.error("Wikipedia fetch error:", error);
     return null;

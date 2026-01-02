@@ -14,30 +14,44 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      // 1. Geocode
-      const geo = await geocodeLocation(query);
-      if (!geo) {
+      // 1. Wikipedia Summary (fetch first to get accurate coordinates)
+      const wiki = await fetchWikipediaSummary(query);
+      if (!wiki) {
         setError("We couldn't find that location. Please try a different name.");
         setIsLoading(false);
         return;
       }
 
-      // 2. Wikipedia Summary
-      const wiki = await fetchWikipediaSummary(query);
-      if (!wiki) {
-        setError("We found the location but couldn't find historical details for it.");
-        setIsLoading(false);
-        return;
+      // 2. Use Wikipedia coordinates if available, otherwise geocode
+      let lat, lng, name;
+      if (wiki.lat && wiki.lng) {
+        // Wikipedia has coordinates - use them (more accurate for historic sites)
+        lat = wiki.lat;
+        lng = wiki.lng;
+        name = wiki.title;
+        console.log('Using Wikipedia coordinates for accuracy');
+      } else {
+        // Fallback to geocoding if Wikipedia doesn't have coordinates
+        const geo = await geocodeLocation(query);
+        if (!geo) {
+          setError("We found information but couldn't locate it on the map.");
+          setIsLoading(false);
+          return;
+        }
+        lat = geo.lat;
+        lng = geo.lng;
+        name = geo.name;
+        console.log('Using geocoding as fallback');
       }
 
       // 3. AI Narration from n8n
-      const narration = await generateNarration(geo.name, wiki.extract, wiki.title);
+      const narration = await generateNarration(name, wiki.extract, wiki.title);
 
       // 4. Set State
       setLocationData({
-        name: geo.name,
-        lat: geo.lat,
-        lng: geo.lng,
+        name,
+        lat,
+        lng,
         narration,
         historicalContext: wiki
       });
