@@ -103,10 +103,17 @@ export const generateNarration = async (locationName, wikiContext, wikipediaPage
     });
     
     const data = await response.json();
-    return data.narration || "Welcome to this historic site. Take a moment to soak in the incredible atmosphere and rich history surrounding you.";
+    console.log('n8n response has audioContent:', !!data.audioContent);
+    return {
+      narration: data.narration || "Welcome to this historic site. Take a moment to soak in the incredible atmosphere and rich history surrounding you.",
+      audioContent: data.audioContent || null
+    };
   } catch (error) {
     console.error("Narration generation error:", error);
-    return "Welcome to this historic site. Imagine the countless stories these ancient paths could tell as you explore one of the world's most significant landmarks.";
+    return {
+      narration: "Welcome to this historic site. Imagine the countless stories these ancient paths could tell as you explore one of the world's most significant landmarks.",
+      audioContent: null
+    };
   }
 };
 

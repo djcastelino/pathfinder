@@ -45,14 +45,15 @@ function App() {
       }
 
       // 3. AI Narration from n8n
-      const narration = await generateNarration(name, wiki.extract, wiki.title);
+      const narrationData = await generateNarration(name, wiki.extract, wiki.title);
 
       // 4. Set State
       setLocationData({
         name,
         lat,
         lng,
-        narration,
+        narration: narrationData.narration,
+        audioContent: narrationData.audioContent,
         historicalContext: wiki
       });
       setCurrentView('viewer');
